@@ -20,7 +20,7 @@ def extract_features(url):
     features["num_at"] = url.count("@")
     features["uses_https"] = int(parsed.scheme == "https")
     features["has_ip"] = int(bool(re.search(r'\d+\.\d+\.\d+\.\d+', parsed.netloc)))
-    features["num_subdomains"] = len(parsed.netloc.split(".")) - 2  
+    features["num_subdomains"] = max(0, len(parsed.netloc.split(".")) - 2)
     features["path_length"] = len(parsed.path)
     return features
 
@@ -36,12 +36,12 @@ def CSIC_preprocess(url):
     df.drop(columns=['lable'],  errors='ignore', inplace=True)
     
     malicious_keywords = [
-    'SELECT', 'UNION', 'DROP', 'DELETE', 'FROM', 'WHERE', 'OR', 'LIKE', 'AND', '1=1', '--', '\'',
-    'SCRIPT', 'javascript', 'alert', 'iframe', 'src=', 'onerror', 'prompt', 'confirm', 'eval', 'onload',
-    'mouseover', 'onunload', 'document.', 'window.', 'xmlhttprequest', 'xhr', 'cookie',
-    'tamper', 'vaciar', 'carrito', 'incorrect', 'pwd', 'login', 'password', 'id',
-    '%0D', '%0A', '.php', '.js', 'admin', 'administrator'
-]
+        'SELECT', 'UNION', 'DROP', 'DELETE', 'FROM', 'WHERE', 'OR', 'LIKE', 'AND', '1=1', '--', '\'',
+        'SCRIPT', 'javascript', 'alert', 'iframe', 'src=', 'onerror', 'prompt', 'confirm', 'eval', 'onload',
+        'mouseover', 'onunload', 'document.', 'window.', 'xmlhttprequest', 'xhr', 'cookie',
+        'tamper', 'vaciar', 'carrito', 'incorrect', 'pwd', 'login', 'password', 'id',
+        '%0D', '%0A', '.php', '.js', 'admin', 'administrator'
+    ]
 
     # Feature extraction from URL
     df['url_length'] = df['URL'].apply(len)
@@ -94,7 +94,7 @@ def CSIC_preprocess(url):
     scaler = StandardScaler()
     feature_matrix = scaler.fit_transform(feature_matrix)
     
-    return df 
+    return df, feature_matrix
 
 def Malicious_phish_preprocess(url):
     df = pd.read_csv(url, delimiter=',', on_bad_lines='skip')
