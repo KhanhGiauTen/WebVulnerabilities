@@ -24,9 +24,9 @@ def extract_features(url):
     features["path_length"] = len(parsed.path)
     return features
 
-def CSIC_preprocess(url):
-    df = pd.read_csv(url, delimiter=',', on_bad_lines='skip')
-    df['Accept'] = df['Accept'].fillna(df['Accept'].mode()[0])
+def CSIC_preprocess(df: pd.DataFrame):
+    # df = pd.read_csv(url, delimiter=',', on_bad_lines='skip')
+    # df['Accept'] = df['Accept'].fillna(df['Accept'].mode()[0])
     
     df['lenght'] = df['lenght'].fillna('0')
     df['content-type'] = df['content-type'].fillna('None')
@@ -93,8 +93,11 @@ def CSIC_preprocess(url):
     
     scaler = StandardScaler()
     feature_matrix = scaler.fit_transform(feature_matrix)
+
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(feature_matrix, df['classification'].values)
     
-    return df, feature_matrix
+    return X_resampled, y_resampled
 
 def Malicious_phish_preprocess(url):
     df = pd.read_csv(url, delimiter=',', on_bad_lines='skip')
