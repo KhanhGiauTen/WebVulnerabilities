@@ -30,3 +30,6 @@ BASE_DIR = os.path.dirname(CONFIG_DIR)
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 CSIC_FILE = os.path.join(DATA_DIR, "csic_database.csv")
+
+PARSE_REQUEST_FILE = os.path.join(DATA_DIR, "parsed_requests.csv")
+

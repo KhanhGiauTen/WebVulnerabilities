@@ -1,4 +1,5 @@
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, roc_auc_score, log_loss
+from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 
 # import train_model
@@ -86,3 +87,19 @@ def print_metrics(train_type,y_true, y_pred, y_proba, dataset_name):
         'ROC-AUC': roc_auc,
         'Log Loss': logloss        
     }
+    
+    
+def test(model: RandomForestClassifier, X_test, y_test):
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)[:, 1]
+    accuracy = accuracy_score(y_test, y_pred)
+    test_error = 1 - accuracy
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+   
+    print(f"\nAccuracy: {accuracy:.4f}")
+    print(f"Test Error (1-Accuracy): {test_error:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1-Score: {f1:.4f}")

@@ -164,7 +164,7 @@ def random_forest_grid_search(X_train, y_train, X_test, y_test, X_val, y_val):
     # results_df.to_csv('model_results.csv', index=False)
     # print("\nThe results was saved in 'model_results.csv'")
     
-    return y_test_pred, y_test_proba, y_val_pred, y_val_proba
+    return y_test_pred, y_test_proba, y_val_pred, y_val_proba, best_rf_model
     
 
 # print(random_forest(X_train, y_train, X_test, y_test, X_val, y_val))
