@@ -68,5 +68,6 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 
 CSIC_FILE = os.path.join(DATA_DIR, "csic_database.csv")
 
-PARSE_REQUEST_FILE = os.path.join(DATA_DIR, "parsed_requests.csv")
+PARSE_REQUEST_TEST = os.path.join(DATA_DIR, "parsed_requests_test.csv")
 
+PARSE_REQUEST_TRAIN = os.path.join(DATA_DIR, "parsed_requests_train.csv")

@@ -16,7 +16,14 @@ def parse_single_request(text):
         match = re.match(r'^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)\s+([^\s]+)', line)
         if match:
             data['Method'] = match.group(1)
-            data['URL'] = match.group(2)
+            path = match.group(2)
+            # Tìm dòng Host: ...
+            host_line = next((l for l in lines if l.lower().startswith("host:")), None)
+            if host_line:
+                host = host_line.split(":", 1)[1].strip()
+                data['URL'] = f"{host}{path}"
+            else:
+                data['URL'] = path  # fallback nếu không có host
             break
 
     # Lấy các HTTP header cần thiết
