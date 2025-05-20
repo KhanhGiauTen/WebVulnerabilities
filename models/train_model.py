@@ -1,30 +1,23 @@
-import pandas as pd
-import numpy as np
+
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import ConfusionMatrixDisplay
+
 from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from imblearn.over_sampling import SMOTE
-import matplotlib.pyplot as plt
 import time
 from sklearn.tree import DecisionTreeClassifier
-import seaborn as sns
-from sklearn.metrics import roc_curve
+
+
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, log_loss
+
 from sklearn.svm import LinearSVC
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.naive_bayes import GaussianNB
-from preprocessing.preprocessing import CSIC_preprocess, Malicious_phish_preprocess
+
 from xgboost import XGBClassifier
+from config_module.config import RANDOM_STATE, MAX_ITER, N_JOBS, VERBOSE, N_ESTIMATORS, GRID_SEARCH_N_ESTIMATORS, MAX_DEPTH, MIN_SAMPLES_SPLIT, CV, KNN_N_NEIGHBORS, KNN_METRIC, XGBOOST_N_ESTIMATORS, XGBOOST_MAX_DEPTH, XGBOOST_LEARNING_RATE, XGBOOST_SUBSAMPLE,XGBOOST_SCALE_POSITIVE_WEIGHT, XGBOOST_COLSAMPLE_BYTREE, OBJECTIVE, LINEAR_SVC_C, LINEAR_SVC_CV, LINEAR_SVC_TOL, LINEAR_SVC_MAX_ITER
  
     
 def random_forest(X_train, y_train, X_test, X_val):
-    rf_model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=2)
+    rf_model = RandomForestClassifier(n_estimators=N_ESTIMATORS, random_state=RANDOM_STATE, n_jobs=N_JOBS)
     
     #Training
     start_time = time.time()
@@ -45,23 +38,23 @@ def random_forest(X_train, y_train, X_test, X_val):
     return y_test_pred, y_test_proba, y_val_pred, y_val_proba
     
     
-def random_forest_grid_search(X_train, y_train, X_test, y_test, X_val, y_val):
+def random_forest_grid_search(X_train, y_train, X_test, X_val):
     # Define hyperparameter 
     param_grid = {
-        'n_estimators': [50, 100],  
-        'max_depth': [10, None],   
-        'min_samples_split': [2,5]      
+        'n_estimators': GRID_SEARCH_N_ESTIMATORS,  
+        'max_depth': MAX_DEPTH,   
+        'min_samples_split': MIN_SAMPLES_SPLIT      
     }
 
     # Initial Grid Search
-    rf_model = RandomForestClassifier(random_state=42, n_jobs=2)
+    rf_model = RandomForestClassifier(random_state=N_ESTIMATORS, n_jobs=N_JOBS)
     grid_search = GridSearchCV(
         estimator=rf_model,
         param_grid=param_grid,
-        cv=3, 
+        cv=CV, 
         scoring='recall', 
-        n_jobs=2,  
-        verbose=1
+        n_jobs=N_JOBS,  
+        verbose=VERBOSE
     )
 
     # Training
@@ -90,7 +83,7 @@ def random_forest_grid_search(X_train, y_train, X_test, y_test, X_val, y_val):
     
 
  
-def naive_bayes_opt_gs(X_train, y_train, X_test, y_test, X_val, y_val):
+def naive_bayes_opt_gs(X_train, y_train, X_test, X_val):
     nb_model = GaussianNB()
     start_time = time.time()
     nb_model.fit(X_train, y_train)  
@@ -107,8 +100,8 @@ def naive_bayes_opt_gs(X_train, y_train, X_test, y_test, X_val, y_val):
     print(f"Prediction time (s):{prediction_time:.2f}")
     return y_test_pred, y_test_proba, y_val_pred, y_val_proba,nb_model
     
-def decision_tree(X_train, y_train, X_test, y_test, X_val, y_val):
-    dt_model = DecisionTreeClassifier(random_state=42)
+def decision_tree(X_train, y_train, X_test, X_val):
+    dt_model = DecisionTreeClassifier(random_state=RANDOM_STATE)
 
     start_time = time.time()
     dt_model.fit(X_train, y_train)
@@ -125,8 +118,8 @@ def decision_tree(X_train, y_train, X_test, y_test, X_val, y_val):
     print(f"Prediction time (s):{prediction_time:.2f}")
     return y_test_pred, y_test_proba, y_val_pred, y_val_proba,dt_model
 
-def knn(X_train, y_train, X_test, y_test, X_val, y_val):
-    knn_model = KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
+def knn(X_train, y_train, X_test, X_val):
+    knn_model = KNeighborsClassifier(n_neighbors=KNN_N_NEIGHBORS, n_jobs=N_JOBS)
     start_time = time.time()
     knn_model.fit(X_train, y_train)
     training_time = time.time() - start_time
@@ -142,9 +135,9 @@ def knn(X_train, y_train, X_test, y_test, X_val, y_val):
     print(f"Prediction time (s):{prediction_time:.2f}")
     return y_test_pred, y_test_proba, y_val_pred, y_val_proba,knn_model
 
-def linear_svc(X_train, y_train, X_test, y_test, X_val, y_val):
-    base_model = LinearSVC(C=1.0, random_state=42, tol=0.01, max_iter=1000)
-    svm_model = CalibratedClassifierCV(base_model, method='sigmoid', cv=5)
+def linear_svc(X_train, y_train, X_test, X_val):
+    base_model = LinearSVC(C=LINEAR_SVC_C, random_state=RANDOM_STATE, tol=LINEAR_SVC_TOL, max_iter=MAX_ITER)
+    svm_model = CalibratedClassifierCV(base_model, method='sigmoid', cv=LINEAR_SVC_CV)
 
     # Training
     start_time = time.time()
@@ -162,17 +155,17 @@ def linear_svc(X_train, y_train, X_test, y_test, X_val, y_val):
     print(f"Prediction time (s):{prediction_time:.2f}")
     return y_test_pred, y_test_proba, y_val_pred, y_val_proba,svm_model
 
-def xgboost(X_train, y_train, X_test, y_test, X_val, y_val):
+def xgboost(X_train, y_train, X_test, X_val):
     xgb_model = XGBClassifier(
-    scale_pos_weight=1.5,
-    n_estimators=50,
-    max_depth=6,
-    learning_rate=0.1,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    objective='binary:logistic',
-    random_state=42,
-    n_jobs=-1
+    scale_pos_weight=XGBOOST_SCALE_POSITIVE_WEIGHT,
+    n_estimators=XGBOOST_N_ESTIMATORS,
+    max_depth=XGBOOST_MAX_DEPTH,
+    learning_rate=XGBOOST_LEARNING_RATE,
+    subsample=XGBOOST_SUBSAMPLE,
+    colsample_bytree=XGBOOST_COLSAMPLE_BYTREE,
+    objective=OBJECTIVE,
+    random_state=RANDOM_STATE,
+    n_jobs=N_JOBS
 )
 
     # Training

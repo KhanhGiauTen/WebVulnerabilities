@@ -6,10 +6,9 @@ from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
 from urllib.parse import urlparse
 import re
-import nbimporter
-import sys
 import pandas as pd
 import numpy as np 
+from config_module.config import PCA_COMPONENT, MAX_FEATURE
 
 def extract_features(url):
     parsed = urlparse(url)
@@ -64,13 +63,13 @@ def CSIC_preprocess(df: pd.DataFrame):
     print("Feature Distribution was saved!")
     
     df['content'] = df['content'].fillna(' ')
-    url_tfidf = TfidfVectorizer(max_features=1000, lowercase=True, token_pattern=r'(?u)\b\w+\b')
+    url_tfidf = TfidfVectorizer(max_features=MAX_FEATURE, lowercase=True, token_pattern=r'(?u)\b\w+\b')
     url_features = url_tfidf.fit_transform(df['URL']).toarray()
-    url_feature_names = url_tfidf.get_feature_names_out()
+    # url_feature_names = url_tfidf.get_feature_names_out()
     
-    content_tfidf = TfidfVectorizer(max_features=1000, lowercase=True, token_pattern=r'(?u)\b\w+\b')
+    content_tfidf = TfidfVectorizer(max_features=MAX_FEATURE, lowercase=True, token_pattern=r'(?u)\b\w+\b')
     content_features = content_tfidf.fit_transform(df['content']).toarray()
-    content_feature_names = content_tfidf.get_feature_names_out()
+    # content_feature_names = content_tfidf.get_feature_names_out()
     
     df = pd.get_dummies(
         df,                          # DataFrame gốc
@@ -92,7 +91,7 @@ def CSIC_preprocess(df: pd.DataFrame):
     ])
     
 
-    pca = PCA(n_components=300)  # hoặc chọn giữ 95% phương sai
+    pca = PCA(n_components=PCA_COMPONENT)  # hoặc chọn giữ 95% phương sai
     feature_matrix = pca.fit_transform(feature_matrix)
     
     print("Feature matrix shape:", feature_matrix.shape[1])
@@ -105,31 +104,6 @@ def CSIC_preprocess(df: pd.DataFrame):
     
     return X_resampled, y_resampled
 
-def Malicious_phish_preprocess(url):
-    df = pd.read_csv(url, delimiter=',', on_bad_lines='skip')
-    features_df = df["url"].apply(extract_features).apply(pd.Series)
-    
-    # Áp dụng PCA để giảm số chiều
-    pca = PCA(n_components=2)  # Chỉ lấy một thành phần
-    reduced_features = pca.fit_transform(features_df)
-
-    pca_df = pd.DataFrame(reduced_features, columns=["pca1", "pca2"])
-
-    # Dùng để làm cho chỉ số khớp nhau trước khi nối 
-    pca_df.reset_index(drop=True, inplace=True)
-    df.reset_index(drop=True, inplace=True)
-
-    # Nối vào data gốc
-    df = pd.concat([df, pca_df], axis=1)
-    
-    df.replace("nan", np.nan, inplace=True)
-    df = df.dropna()
-    df = df.drop_duplicates()
-
-    statusMap = {"benign": 0, "phishing": 1, "defacement": 1, "malware": 1}
-    df["type"] = df["type"].map(statusMap)
-
-    return df
 
 def parsed_request_preprocess(df: pd.DataFrame):
     
@@ -138,7 +112,7 @@ def parsed_request_preprocess(df: pd.DataFrame):
     df['is_post'] = df['Method'].apply(lambda x: 1 if x == 'POST' else 0)
 
     df.drop(columns=['lable'],  errors='ignore', inplace=True)
-    df["classification"] = df["classification"].apply(lambda x: 0 if x == 'valid' else 1)
+    df["classification"] = df["classification"].apply(lambda x: 0 if x == 'Valid' else 1)
 
     
     malicious_keywords = [
@@ -170,11 +144,11 @@ def parsed_request_preprocess(df: pd.DataFrame):
     print("Feature Distribution was saved!")
     
     df['content'] = df['content'].fillna(' ')
-    url_tfidf = TfidfVectorizer(max_features=1000, lowercase=True, token_pattern=r'(?u)\b\w+\b')
+    url_tfidf = TfidfVectorizer(max_features=MAX_FEATURE, lowercase=True, token_pattern=r'(?u)\b\w+\b')
     url_features = url_tfidf.fit_transform(df['URL'].fillna('')).toarray()
     url_feature_names = url_tfidf.get_feature_names_out()
     
-    content_tfidf = TfidfVectorizer(max_features=1000, lowercase=True, token_pattern=r'(?u)\b\w+\b')
+    content_tfidf = TfidfVectorizer(max_features=MAX_FEATURE, lowercase=True, token_pattern=r'(?u)\b\w+\b')
     content_features = content_tfidf.fit_transform(df['content']).toarray()
     content_feature_names = content_tfidf.get_feature_names_out()
     
@@ -198,7 +172,7 @@ def parsed_request_preprocess(df: pd.DataFrame):
     ])
     
 
-    pca = PCA(n_components=300)  # hoặc chọn giữ 95% phương sai
+    pca = PCA(n_components=PCA_COMPONENT)  # hoặc chọn giữ 95% phương sai
     feature_matrix = pca.fit_transform(feature_matrix)
     
     print("Feature matrix shape:", feature_matrix.shape[1])
