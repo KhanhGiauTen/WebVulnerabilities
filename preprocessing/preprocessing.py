@@ -8,6 +8,10 @@ from urllib.parse import urlparse
 import re
 import pandas as pd
 import numpy as np 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname("config_module/config"), '..')))
+
 from config_module.config import PCA_COMPONENT, MAX_FEATURE
 
 def extract_features(url):
@@ -274,4 +278,5 @@ def parsed_request_train_preprocess(df: pd.DataFrame):
 
 
     
+
 
